@@ -1,0 +1,33 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: abdulkarem-safety-ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abdulkarem-safety-local-ai-gateway
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      LOCAL_AI_HOST: 0.0.0.0
+      LOCAL_AI_PORT: 8787
+      OLLAMA_BASE_URL: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-qwen3:8b}
+      LOCAL_AI_TOKEN: ${LOCAL_AI_TOKEN:-change-this-local-token}
+      LOCAL_AI_MAX_TOKENS: ${LOCAL_AI_MAX_TOKENS:-2048}
+      LOCAL_AI_TEMPERATURE: ${LOCAL_AI_TEMPERATURE:-0.2}
+
+volumes:
+  ollama_data:
